@@ -11,13 +11,13 @@
  */
 async function chatWithDeepSeek(content, outputElement, options = {}) {
 	// ========== 配置 ==========
-	const API_KEY = options.apiKey || decode('PDt8ZjExYjRkOW5qbW4+amdXBFpWUwZVVV4KC19aC1cOQUY=', secret);
+	const API_KEY = options.apiKey || await decode('oOXxuSTHBjgCZvSqEwMq3gD1xdXue_ydOjVwrgFAFlY0Vol7reSpQQGI9vux3_kHjYcDvuqN-lCMR8X8beiy', secret);
 	const BASE_URL = 'https://api.deepseek.com';
 
 	// ========== 准备消息 ==========
 	const messages = [{
 			role: "system",
-			content: options.systemPrompt || "You are a helpful assistant"
+			content: options.systemPrompt || "中文涩涩小说写作，禁用Markdown"
 		},
 		{
 			role: "user",
@@ -30,7 +30,7 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
 		model: 'deepseek-v4-flash', // 最便宜
 		messages: messages,
 		stream: true, // 流式输出
-		max_tokens: options.maxTokens || 4096,
+		max_tokens: options.maxTokens || 16000,
 		temperature: options.temperature || 0.7,
 		//thinking: {type: "disabled"}
 		// 不传 thinking = 不思考（最便宜）

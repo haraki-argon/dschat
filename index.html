@@ -4,6 +4,7 @@
 		<meta charset="utf-8" />
 		<title></title>
 		<link rel="stylesheet" href="css/index.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	
 	
@@ -11,10 +12,16 @@
 		<div id="user">
 			<textarea name="" id="" cols="30" rows="10"></textarea>
 			<button onclick="submit()">提交</button>
+			<button onclick="save()">保存文件</button>
+			<p id="okane">预计花费 0.00 元</p>
 			<p id="content"></p>
+			
 		</div>
 		<div id="presets">
-			
+			<p>添加到解密区预设</p>
+		</div>
+		<div id="consets">
+			<p>处理到输入追加预设</p>
 		</div>
 		<div id="secret">
 			<textarea name="" id="" cols="30" rows="10"></textarea>
@@ -30,4 +37,5 @@
 	<script src="js/secret.js"></script>
 	<script src="js/mainpage.js"></script>
 	<script src="js/preset.js"></script>
+	<script src="js/save.js"></script>
 </html>
