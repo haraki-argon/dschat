@@ -26,7 +26,8 @@ body {
     padding: 1.25rem;
     margin-bottom: 1.25rem;
     width: 100%;
-    max-width: 680px; /* 桌面端稍微宽一点 */
+    max-width: 680px;
+    /* 桌面端稍微宽一点 */
     border: 1px solid #e8ecf2;
 }
 
@@ -117,7 +118,7 @@ button:active {
 }
 
 /* 修改秘钥按钮 */
-body > button:last-of-type {
+body>button:last-of-type {
     background: #e8ecf5;
     border: 1px solid #c8d0dd;
     color: #2d3a5e;
@@ -129,7 +130,7 @@ body > button:last-of-type {
     max-width: 680px;
 }
 
-body > button:last-of-type:hover {
+body>button:last-of-type:hover {
     background: #d5dce8;
     border-color: #b0bccf;
 }
@@ -187,14 +188,16 @@ body > button:last-of-type:hover {
 /* ===== 移动端适配强化 (宽度 < 640px) ===== */
 @media (max-width: 640px) {
     body {
-        padding: 0.75rem 0.6rem; /* 减小两边外边距，充分释放可视面积 */
+        padding: 0.75rem 0.6rem;
+        /* 减小两边外边距，充分释放可视面积 */
     }
 
     #user,
     #secret,
     #presets,
-    body > button:last-of-type {
-        max-width: 100%; /* 取消固定最大宽度，占满手机屏 */
+    body>button:last-of-type {
+        max-width: 100%;
+        /* 取消固定最大宽度，占满手机屏 */
     }
 
     #user,
@@ -204,7 +207,8 @@ body > button:last-of-type:hover {
     }
 
     textarea {
-        font-size: 1rem; /* 保持16px以上可防止 iOS 自动放大输入框 */
+        font-size: 1rem;
+        /* 保持16px以上可防止 iOS 自动放大输入框 */
         padding: 0.75rem;
         min-height: 110px;
     }
@@ -242,12 +246,13 @@ body > button:last-of-type:hover {
     }
 
     /* 修改秘钥按钮大尺寸全宽 */
-    body > button:last-of-type {
+    body>button:last-of-type {
         padding: 0.8rem 0;
         font-size: 0.95rem;
         margin-bottom: 1rem;
     }
 }
+
 /* ===== #presets 和 #consets 统一区域样式 ===== */
 #presets,
 #consets {
@@ -305,6 +310,7 @@ body > button:last-of-type:hover {
 
 /* 手机端适配 - 两个区域保持一致 */
 @media (max-width: 640px) {
+
     #presets,
     #consets {
         max-width: 100%;
@@ -328,6 +334,7 @@ body > button:last-of-type:hover {
 
 /* 极小屏适配 */
 @media (max-width: 400px) {
+
     #presets p,
     #consets p {
         font-size: 0.75rem;
@@ -339,7 +346,19 @@ body > button:last-of-type:hover {
         font-size: 0.82rem;
     }
 }
-#okane{
-	padding: 10px;
-	text-align: center;
+
+#okane {
+    padding: 10px;
+    text-align: center;
+}
+
+#requestStatus {
+    padding: 0 10px 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+#submitButton:disabled {
+    cursor: wait;
 }
