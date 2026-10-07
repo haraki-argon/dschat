@@ -48,6 +48,14 @@ textarea {
     margin-bottom: 0.8rem;
 }
 
+label {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
 textarea:focus {
     outline: none;
     border-color: #7c8ba0;
@@ -65,6 +73,10 @@ input[type="text"] {
     color: #0f172a;
     transition: border 0.2s, background 0.2s;
     margin: 0.5rem 0 0.8rem 0;
+}
+
+#modelInput {
+    margin: 0 0 0.8rem 0;
 }
 
 input[type="text"]:focus {

@@ -43,13 +43,14 @@ async function submit() {
 	}
 
 	let s = document.querySelector("#user textarea").value;
+	let model = document.querySelector("#modelInput").value;
 	isSubmitting = true;
 	button.textContent = "停止生成";
 	elem.textContent = '';
 	startStatusAnimation();
 	updateRequestStatus({ status: '已点击提交，正在请求...', inputTokens: 0, outputTokens: 0, estimatedCost: 0 });
 
-	let u = await chatWithDeepSeek(s, elem, { onProgress: updateRequestStatus });
+	let u = await chatWithDeepSeek(s, elem, { model: model, onProgress: updateRequestStatus });
 	stopStatusAnimation();
 	renderRequestStatus();
 	if (u.estimatedCost !== null && u.estimatedCost !== undefined) {

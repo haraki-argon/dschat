@@ -51,6 +51,7 @@ function getDeepSeekUsageCost(usage) {
 async function chatWithDeepSeek(content, outputElement, options = {}) {
     const API_KEY = options.apiKey || await decode('oOXxuSTHBjgCZvSqEwMq3gD1xdXue_ydOjVwrgFAFlY0Vol7reSpQQGI9vux3_kHjYcDvuqN-lCMR8X8beiy', secret);
     const BASE_URL = 'https://api.deepseek.com';
+    const model = options.model?.trim() || 'deepseek-flash';
 
     const messages = [
         { role: "system", content: options.systemPrompt || "" },
@@ -59,12 +60,13 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
 
     const inputTokensEstimate = estimateTokenCount(messages.map(message => message.content).join('\n'));
     const requestBody = {
-        model: 'deepseek-v4-flash',
+        model: model,
         messages: messages,
         stream: true,
         stream_options: { include_usage: true },
         max_tokens: options.maxTokens || 16000,
         temperature: options.temperature || 0.7,
+        extra_body: { "thinking": { "type": "disabled" } }
     };
 
     const controller = new AbortController();
