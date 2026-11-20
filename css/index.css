@@ -159,6 +159,7 @@ body>button:last-of-type:hover {
     word-break: break-word;
     min-height: 3.5rem;
     transition: background 0.2s;
+    white-space: pre-wrap;
 }
 
 #content:empty::before {
@@ -369,6 +370,32 @@ body>button:last-of-type:hover {
     text-align: center;
     font-size: 0.85rem;
     color: #64748b;
+}
+
+#waitStats {
+    padding: 0 10px 0.5rem;
+    text-align: center;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+#waitTimer {
+    color: #334155;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.person-highlight {
+    color: #1e293b;
+    border-radius: 4px;
+    padding: 0 0.08em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+#personNames,
+#dialogueFont {
+    margin-bottom: 0.8rem;
 }
 
 #submitButton:disabled {

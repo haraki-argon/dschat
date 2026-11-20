@@ -8,19 +8,27 @@ function stopDeepSeekRequest() {
     return false;
 }
 
-function getDeepSeekPricing() {
+function getDeepSeekPricing(model = 'deepseek-flash') {
     const now = new Date();
     const beijingHour = (now.getUTCHours() + 8) % 24;
     const weekday = now.getUTCDay();
     const isPeak = weekday >= 1 && weekday <= 5 &&
         ((beijingHour >= 9 && beijingHour < 12) || (beijingHour >= 14 && beijingHour < 18));
 
-    return {
-        inputCached: isPeak ? 0.10 : 0.05,
-        inputUncached: isPeak ? 3.00 : 1.50,
-        output: isPeak ? 9.00 : 4.50,
-        period: isPeak ? '高峰时段' : '空闲时段'
-    };
+    const isV4Pro = /deepseek-v4-pro|v4-pro/i.test(model);
+    const pricing = isV4Pro
+        ? {
+            inputCached: isPeak ? 0.30 : 0.15,
+            inputUncached: isPeak ? 9.00 : 4.50,
+            output: isPeak ? 27.00 : 13.50
+        }
+        : {
+            inputCached: isPeak ? 0.04 : 0.02,
+            inputUncached: isPeak ? 2.00 : 1.00,
+            output: isPeak ? 8.00 : 4.00
+        };
+
+    return { ...pricing, period: isPeak ? '高峰时段' : '空闲时段', model: isV4Pro ? 'deepseek-v4-pro' : 'deepseek-flash' };
 }
 
 function estimateTokenCount(text) {
@@ -30,14 +38,14 @@ function estimateTokenCount(text) {
     return Math.ceil(chineseCharacters / 1.5 + otherCharacters / 4);
 }
 
-function estimateDeepSeekCost(inputTokens, outputTokens) {
-    const pricing = getDeepSeekPricing();
+function estimateDeepSeekCost(inputTokens, outputTokens, model) {
+    const pricing = getDeepSeekPricing(model);
     return (inputTokens / 1000000) * pricing.inputUncached +
         (outputTokens / 1000000) * pricing.output;
 }
 
-function getDeepSeekUsageCost(usage) {
-    const pricing = getDeepSeekPricing();
+function getDeepSeekUsageCost(usage, model) {
+    const pricing = getDeepSeekPricing(model);
     const promptTokens = usage.prompt_tokens || 0;
     const outputTokens = usage.completion_tokens || 0;
     const cachedTokens = usage.prompt_cache_hit_tokens || 0;
@@ -69,6 +77,7 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
         extra_body: { "thinking": { "type": "disabled" } }
     };
 
+    let fullContent = '';
     const controller = new AbortController();
     activeDeepSeekController = controller;
     const reportProgress = (status, outputTokens = 0, costOverride = null) => {
@@ -77,8 +86,9 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
                 status,
                 inputTokens: inputTokensEstimate,
                 outputTokens,
-                estimatedCost: costOverride ?? estimateDeepSeekCost(inputTokensEstimate, outputTokens),
-                pricing: getDeepSeekPricing()
+                estimatedCost: costOverride ?? estimateDeepSeekCost(inputTokensEstimate, outputTokens, model),
+                pricing: getDeepSeekPricing(model),
+                hasContent: fullContent.trim().length > 0
             });
         }
     };
@@ -104,10 +114,10 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let fullContent = '';
         let usage = null;
         let buffer = '';
         let pendingUpdate = false;
+        let autoStopped = false;
 
         // 清空
         outputElement.innerText = '';
@@ -120,14 +130,22 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
             // 使用 RAF 确保在浏览器下一帧渲染前更新
             if (window.requestAnimationFrame) {
                 requestAnimationFrame(() => {
-                    outputElement.innerText = fullContent;
+                    if (typeof options.onContentUpdate === 'function') {
+                        options.onContentUpdate(fullContent);
+                    } else {
+                        outputElement.innerText = fullContent;
+                    }
                     outputElement.scrollTop = outputElement.scrollHeight;
                     pendingUpdate = false;
                 });
             } else {
                 // 降级方案：使用 setTimeout
                 setTimeout(() => {
-                    outputElement.innerText = fullContent;
+                    if (typeof options.onContentUpdate === 'function') {
+                        options.onContentUpdate(fullContent);
+                    } else {
+                        outputElement.innerText = fullContent;
+                    }
                     outputElement.scrollTop = outputElement.scrollHeight;
                     pendingUpdate = false;
                 }, 50);
@@ -157,9 +175,14 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
                     const delta = json.choices?.[0]?.delta?.content;
                     if (delta) {
                         fullContent += delta;
-                        // 不再立即更新，而是调度更新
+                        // 先刷新进度，让首个有效文本可以被统计，即使随后触发自动中止。
                         scheduleUpdate();
                         reportProgress(`正在生成回复，已接收约 ${estimateTokenCount(fullContent)} tokens...`, estimateTokenCount(fullContent));
+                        if (fullContent.slice(0, 20).includes('抱歉') || fullContent.slice(0, 20).includes('无法')) {
+                            autoStopped = true;
+                            controller.abort();
+                            break;
+                        }
                     }
                     if (json.usage) {
                         usage = json.usage;
@@ -171,26 +194,38 @@ async function chatWithDeepSeek(content, outputElement, options = {}) {
         }
 
         // 最终确保内容完整显示
-        outputElement.innerText = fullContent;
+        if (typeof options.onContentUpdate === 'function') {
+            options.onContentUpdate(fullContent);
+        } else {
+            outputElement.innerText = fullContent;
+        }
         outputElement.scrollTop = outputElement.scrollHeight;
 
         const outputTokens = usage?.completion_tokens || estimateTokenCount(fullContent);
         const estimatedCost = usage
-            ? getDeepSeekUsageCost(usage)
-            : estimateDeepSeekCost(inputTokensEstimate, outputTokens);
+            ? getDeepSeekUsageCost(usage, model)
+            : estimateDeepSeekCost(inputTokensEstimate, outputTokens, model);
         reportProgress('回复完成', outputTokens, estimatedCost);
 
         return {
             success: true,
             content: fullContent,
             usage: usage,
-            estimatedCost
+            estimatedCost,
+            autoStopped
         };
 
     } catch (error) {
         if (error.name === 'AbortError') {
-            reportProgress('已停止请求');
-            return { success: false, cancelled: true, error: '请求已停止' };
+            const status = autoStopped ? '检测到回复前 20 字含有“抱歉”或“无法”，已自动停止' : '已停止请求';
+            if (typeof options.onContentUpdate === 'function') {
+                options.onContentUpdate(fullContent);
+            } else {
+                outputElement.innerText = fullContent;
+            }
+            outputElement.scrollTop = outputElement.scrollHeight;
+            reportProgress(status, estimateTokenCount(fullContent));
+            return { success: false, cancelled: true, autoStopped, error: status };
         }
         outputElement.innerText = `❌ 网络错误：${error.message || '请检查网络连接'}`;
         return { success: false, error: `请求失败: ${error.message || '网络错误'}` };

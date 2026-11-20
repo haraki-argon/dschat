@@ -17,8 +17,16 @@
 		<button id="submitButton" onclick="submit()">提交</button>
 		<button onclick="save()">保存文件</button>
 		<p id="okane">预计花费 0.00 元</p>
+		<div id="waitStats" aria-live="polite">
+			<div id="waitTimer">本次已等待 0 秒</div>
+			<div id="waitHistory">历史首个有效文本：暂无数据</div>
+		</div>
 		<p id="requestStatus" role="status" aria-live="polite">等待提交</p>
 		<p id="content"></p>
+		<label for="personNames">人物名称（逗号分隔）</label>
+		<input type="text" id="personNames" placeholder="例如：张三,李四,王五" />
+		<label for="dialogueFont">对话字体</label>
+		<input type="text" id="dialogueFont" placeholder="例如：宋体、Microsoft YaHei" />
 
 	</div>
 	<div id="presets">
